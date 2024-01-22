@@ -1,39 +1,36 @@
-import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class ProductWriter {
 
     public static void main(String[] args) {
-        List<String> products = new ArrayList<>();
-        Scanner in = new Scanner(System.in);
+        List<Product> products = new ArrayList<>();
 
         boolean done = false;
 
         do {
-            String ID = SafeInput.getNonZeroLenString(in, "Enter the ID [6 digits]: ");
-            String name = SafeInput.getNonZeroLenString(in, "Enter the product name: ");
-            String description = SafeInput.getNonZeroLenString(in, "Enter the product description: ");
-            double cost = SafeInput.getDouble(in, "Enter the product cost: ");
+            String ID = SafeInput.getNonEmptyString("Enter the ID [6 digits]: ");
+            String name = SafeInput.getNonEmptyString("Enter the product name: ");
+            String description = SafeInput.getNonEmptyString("Enter the product description: ");
+            double cost = SafeInput.getRangedDouble("Enter the product cost", 0.01, Double.MAX_VALUE);
 
-            String productRec = String.format("%s, %s, %s, %.2f", ID, name, description, cost);
-            products.add(productRec);
+            Product product = new Product(ID, name, description, cost);
+            products.add(product);
 
-            done = SafeInput.getYNConfirm(in, "Are you done?");
+            done = SafeInput.getYNConfirm("Are you done?");
         } while (!done);
 
         writeToFile(products);
         System.out.println("Product file written!");
     }
 
-    private static void writeToFile(List<String> products) {
+    private static void writeToFile(List<Product> products) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("ProductTestData.txt"))) {
-            for (String rec : products) {
-                writer.write(rec);
+            for (Product product : products) {
+                writer.write(product.toCSVDataRecord());
                 writer.newLine();
             }
         } catch (IOException e) {

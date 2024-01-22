@@ -1,64 +1,48 @@
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Scanner;
 
 public class PersonGenerator {
+
     public static void main(String[] args) {
-        ArrayList<String> folks = new ArrayList<>();
+        ArrayList<Person> people = new ArrayList<>();
         Scanner in = new Scanner(System.in);
 
         // Define workingDirectory and file outside the main loop
-        File workingDirectory = new File(System.getProperty("user.dir"));
-        Path file = Paths.get(workingDirectory.getPath() + "\\src\\pearsonData.txt");
+        Path file = Paths.get(System.getProperty("user.dir") + "\\src\\personData.txt");
 
         boolean done = false;
 
-        String personRec = "";
-        String ID = "";
-        String firstName = "";
-        String lastName = "";
-        String title = "";
-        int YOB = 0;
-
         do {
-            ID = SafeInput.getNonZeroLenString(in, "Enter the ID [6 digits]: ");
-            firstName = SafeInput.getNonZeroLenString(in, "Enter the first name: ");
-            lastName = SafeInput.getNonZeroLenString(in, "Enter the last name: ");
-            title = SafeInput.getNonZeroLenString(in, "Enter the title: ");
-            YOB = SafeInput.getRangedInt(in, "Enter the year of birth: ", 1000, 9999);
+            String ID = SafeInput.getNonEmptyString("Enter the ID [6 digits]: ");
+            String firstName = SafeInput.getNonEmptyString("Enter the first name: ");
+            String lastName = SafeInput.getNonEmptyString("Enter the last name: ");
+            String title = SafeInput.getNonEmptyString("Enter the title: ");
+            int YOB = SafeInput.getRangedInt("Enter the year of birth: ", 1000, 9999);
 
-            personRec = ID + ", " + firstName + ", " + lastName + ", " + title + ", " + YOB;
-            folks.add(personRec);
+            Person person = new Person(ID, firstName, lastName, title, YOB);
+            people.add(person);
 
-            done = SafeInput.getYNConfirm(in, "Are you done?");
+            done = SafeInput.getYNConfirm("Are you done?");
         } while (!done);
 
-        for (String p : folks)
+        for (Person p : people)
             System.out.println(p);
 
         try {
             // Wrap BufferedWriter around a lower level BufferedOutputStream
-            OutputStream out = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file.toFile(), true));
 
             // Write data to the file
-            for (String rec : folks) {
-                writer.write(rec);
+            for (Person person : people) {
+                writer.write(person.toCSVDataRecord());
                 writer.newLine();
             }
 
